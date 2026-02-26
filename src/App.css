@@ -1,6 +1,7 @@
 .app-layout {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   width: 100%;
   background-color: #f8fafc;
   overflow: hidden;
@@ -427,9 +428,15 @@
     pointer-events: auto;
   }
 
-  /* Force chat to take full width when sidebar is fixed */
+  /* Ensure chat takes full height and width on mobile */
   .app-layout {
-    flex-direction: column;
+    flex-direction: row;
+    /* Keep row so sidebar can slide over */
+  }
+
+  .chat-container {
+    width: 100%;
+    height: 100%;
   }
 
   .sidebar-overlay {
@@ -572,6 +579,12 @@
   overflow: hidden;
   border: 1px solid #334155;
   background: #1e293b;
+  max-width: 100%;
+}
+
+pre {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
 }
 
 .code-block-header {
