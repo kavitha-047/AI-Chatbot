@@ -14,11 +14,10 @@ BEGIN
     END IF;
 END $$;
 
--- 3. Verify RLS
+-- 3. Enable RLS and Add Public Policies (to ensure access)
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
--- 4. Re-apply public policies (safe to run multiple times)
 DROP POLICY IF EXISTS "Public Read Conversations" ON public.conversations;
 CREATE POLICY "Public Read Conversations" ON public.conversations FOR SELECT USING (true);
 
@@ -30,3 +29,8 @@ CREATE POLICY "Public Read Messages" ON public.messages FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Public Insert Messages" ON public.messages;
 CREATE POLICY "Public Insert Messages" ON public.messages FOR INSERT WITH CHECK (true);
+
+-- 4. Force Schema Cache Reload (PostgREST)
+-- Adding and immediately dropping a dummy column is a trick to force PostgREST to reload the schema cache
+ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS _temp_reload_cache BOOLEAN;
+ALTER TABLE public.conversations DROP COLUMN IF EXISTS _temp_reload_cache;

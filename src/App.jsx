@@ -88,19 +88,32 @@ function App() {
 
       // 1. Create conversation if it doesn't exist
       if (!convId) {
-        console.log("Creating new conversation...");
+        const chatTitle = userText.substring(0, 40) + (userText.length > 40 ? '...' : '');
+        console.log("Creating new conversation with title:", chatTitle);
+
         const { data, error } = await supabase
           .from('conversations')
-          .insert([{ title: userText.substring(0, 40) + (userText.length > 40 ? '...' : '') }])
+          .insert([{ title: chatTitle }])
           .select()
           .single();
 
         if (error) {
-          console.error("Supabase create conversation error:", error.message, error.details);
-          throw error;
+          console.error("Supabase create conversation error:", {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          throw new Error(`Failed to create conversation: ${error.message}`);
         }
+
+        if (!data) {
+          throw new Error("Conversation created but no data returned.");
+        }
+
         convId = data.id;
         setCurrentConversationId(convId);
+        console.log("Conversation created successfully, ID:", convId);
       }
 
       // 2. Save user message
