@@ -10,7 +10,7 @@ const model = genAI.getGenerativeModel({
 export const getGeminiResponse = async (prompt) => {
     try {
         if (!apiKey) {
-            throw new Error("Gemini API Key is missing. Please check your .env file.");
+            throw new Error("Gemini API Key is missing. Please check your .env file and ensure VITE_GEMINI_API_KEY is set.");
         }
 
         // Add system instruction inside the prompt for better compatibility

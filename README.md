@@ -1,16 +1,37 @@
-# React + Vite
+# AI ChatBot - Professional AI Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive AI chatbot built with React, Vite, Supabase, and Gemini AI.
 
-Currently, two official plugins are available:
+## 🚀 Setup Instructions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+If you are running this on a new system, follow these steps:
 
-## React Compiler
+1.  **Clone the repository.**
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Configure environment variables**:
+    - Copy `.env.example` to a new file named `.env`.
+    - Fill in your credentials:
+        - `VITE_SUPABASE_URL`: Your Supabase project URL.
+        - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key.
+        - `VITE_GEMINI_API_KEY`: Your Google Gemini API key.
+4.  **Run the development server**:
+    ```bash
+    npm run dev
+    ```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 📱 Features
 
-## Expanding the ESLint configuration
+- **Mobile Friendly**: Fully responsive design with a toggleable sidebar for mobile devices.
+- **Persistent Conversations**: Save and resume chats using Supabase.
+- **AI Powered**: Leveraging Gemini 1.5 Flash for fast and accurate responses.
+- **Modern UI**: Clean, glassmorphism-inspired design with smooth transitions.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠️ Tech Stack
+
+- **Frontend**: React, Lucide React, Framer Motion
+- **Backend/Database**: Supabase
+- **AI Model**: Google Gemini (gemini-flash-latest)
+- **Build Tool**: Vite

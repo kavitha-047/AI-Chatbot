@@ -13,6 +13,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -168,6 +169,30 @@ function App() {
     }
   };
 
+  const isSetupRequired = !import.meta.env.VITE_SUPABASE_URL ||
+    import.meta.env.VITE_SUPABASE_URL.includes('placeholder') ||
+    !import.meta.env.VITE_GEMINI_API_KEY;
+
+  if (isSetupRequired) {
+    return (
+      <div className="setup-container">
+        <div className="setup-card">
+          <Bot size={48} className="setup-icon" />
+          <h2>Setup Required</h2>
+          <p>It looks like your environment variables are not configured correctly.</p>
+          <div className="setup-steps">
+            <ol>
+              <li>Create a <code>.env</code> file in the project root.</li>
+              <li>Add your Supabase and Gemini API keys.</li>
+              <li>Restart the development server.</li>
+            </ol>
+          </div>
+          <p className="setup-hint">Check <code>README.md</code> for more details.</p>
+        </div>
+      </div>
+    );
+  }
+
   const handleNewChat = () => {
     setCurrentConversationId(null);
     setMessages([
@@ -178,19 +203,36 @@ function App() {
         timestamp: new Date()
       }
     ]);
+    setIsSidebarOpen(false); // Close sidebar on mobile when starting new chat
+  };
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  const handleSelectConversation = (id) => {
+    setCurrentConversationId(id);
+    setIsSidebarOpen(false); // Close sidebar on mobile when selecting a chat
   };
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
       <Sidebar
         currentId={currentConversationId}
-        onSelect={setCurrentConversationId}
+        onSelect={handleSelectConversation}
         onNewChat={handleNewChat}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       <div className="chat-container">
         <header className="chat-header">
           <div className="header-info">
+            <button
+              className="menu-toggle"
+              onClick={toggleSidebar}
+              aria-label="Toggle Sidebar"
+            >
+              <Bot size={20} />
+            </button>
             <div className="bot-avatar-large">
               <Bot size={24} />
             </div>

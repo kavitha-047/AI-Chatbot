@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus, MessageSquare, Trash2, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
-function Sidebar({ currentId, onSelect, onNewChat }) {
+function Sidebar({ currentId, onSelect, onNewChat, isOpen, onClose }) {
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -56,45 +56,48 @@ function Sidebar({ currentId, onSelect, onNewChat }) {
     };
 
     return (
-        <aside className="sidebar">
-            <div className="sidebar-header">
-                <button className="new-chat-btn" onClick={onNewChat}>
-                    <Plus size={18} />
-                    New Chat
-                </button>
-            </div>
+        <>
+            {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
+            <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+                <div className="sidebar-header">
+                    <button className="new-chat-btn" onClick={onNewChat}>
+                        <Plus size={18} />
+                        New Chat
+                    </button>
+                </div>
 
-            <nav className="sidebar-nav">
-                <h3 className="sidebar-section-title">Recent Chats</h3>
-                {loading ? (
-                    <p className="loading-history">Loading...</p>
-                ) : conversations.length > 0 ? (
-                    conversations.map((conv) => (
-                        <button
-                            key={conv.id}
-                            className={`conversation-item ${currentId === conv.id ? 'active' : ''}`}
-                            onClick={() => onSelect(conv.id)}
-                        >
-                            <MessageSquare size={16} />
-                            <span className="truncate">{conv.title || "New Chat"}</span>
-                            {currentId === conv.id && (
-                                <Trash2
-                                    size={14}
-                                    className="ml-auto opacity-50 hover:opacity-100"
-                                    onClick={(e) => deleteConversation(e, conv.id)}
-                                />
-                            )}
-                        </button>
-                    ))
-                ) : (
-                    <p className="p-4 text-xs text-slate-500 italic">No previous chats</p>
-                )}
-            </nav>
+                <nav className="sidebar-nav">
+                    <h3 className="sidebar-section-title">Recent Chats</h3>
+                    {loading ? (
+                        <p className="loading-history">Loading...</p>
+                    ) : conversations.length > 0 ? (
+                        conversations.map((conv) => (
+                            <button
+                                key={conv.id}
+                                className={`conversation-item ${currentId === conv.id ? 'active' : ''}`}
+                                onClick={() => onSelect(conv.id)}
+                            >
+                                <MessageSquare size={16} />
+                                <span className="truncate">{conv.title || "New Chat"}</span>
+                                {currentId === conv.id && (
+                                    <Trash2
+                                        size={14}
+                                        className="ml-auto opacity-50 hover:opacity-100"
+                                        onClick={(e) => deleteConversation(e, conv.id)}
+                                    />
+                                )}
+                            </button>
+                        ))
+                    ) : (
+                        <p className="p-4 text-xs text-slate-500 italic">No previous chats</p>
+                    )}
+                </nav>
 
-            <div className="sidebar-footer">
-                <p className="text-xs text-slate-500">AI Chatbot v1.0</p>
-            </div>
-        </aside>
+                <div className="sidebar-footer">
+                    <p className="text-xs text-slate-500">AI Chatbot v1.0</p>
+                </div>
+            </aside>
+        </>
     );
 }
 

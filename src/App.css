@@ -23,7 +23,7 @@
   color: #f1f5f9;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   z-index: 20;
 }
 
@@ -372,4 +372,217 @@
   font-size: 0.625rem;
   color: #94a3b8;
   margin-top: 0.5rem;
+}
+
+/* Mobile Responsiveness & UI Enhancements */
+.menu-toggle {
+  display: none;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  color: #2563eb;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.menu-toggle:hover {
+  background: #e2e8f0;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 15;
+}
+
+@media (max-width: 992px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Force chat to take full width when sidebar is fixed */
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .chat-header {
+    padding: 1rem;
+  }
+
+  .header-titles h1 {
+    font-size: 1.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  .bot-avatar-large {
+    display: none;
+  }
+
+  .messages-area {
+    padding: 1rem;
+    gap: 1.25rem;
+  }
+
+  .message-content-box {
+    max-width: 92%;
+  }
+
+  .message-text {
+    font-size: 1rem;
+    /* Larger font for mobile */
+  }
+
+  .chat-input {
+    padding: 1rem 3.5rem 1rem 1rem;
+    font-size: 1rem;
+    /* Larger font for mobile */
+  }
+
+  .send-button {
+    padding: 0.625rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-titles p {
+    display: none;
+  }
+
+  .message-text {
+    font-size: 0.8125rem;
+  }
+
+  .input-area {
+    padding: 0.75rem;
+  }
+
+  .message-bubble {
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .message-content-box {
+    max-width: 95%;
+  }
+
+  .header-titles h1 {
+    max-width: 120px;
+  }
+
+  .setup-card {
+    padding: 1.5rem;
+  }
+
+  .setup-card h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Setup Screen Styles */
+.setup-container {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.setup-card {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  margin: auto;
+}
+
+.setup-icon {
+  color: #2563eb;
+  margin-bottom: 1.5rem;
+  background: #eff6ff;
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.setup-card h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+.setup-card p {
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+.setup-steps {
+  text-align: left;
+  background: #f1f5f9;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+}
+
+.setup-steps ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #334155;
+}
+
+.setup-steps li {
+  margin-bottom: 0.75rem;
+}
+
+.setup-steps code {
+  background: #e2e8f0;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+}
+
+.setup-hint {
+  font-size: 0.875rem;
+  font-style: italic;
 }
