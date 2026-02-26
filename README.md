@@ -12,6 +12,9 @@ If you are running this on a new system, follow these steps:
     npm install
     ```
 3.  **Configure environment variables**:
+    > [!IMPORTANT]
+    > The `.env` file is NOT included in git for security. You must create it manually or copy it from your original system.
+    
     - Copy `.env.example` to a new file named `.env`.
     - Fill in your credentials:
         - `VITE_SUPABASE_URL`: Your Supabase project URL.
