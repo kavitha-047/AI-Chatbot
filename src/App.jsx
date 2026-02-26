@@ -45,7 +45,10 @@ function App() {
         .eq('conversation_id', id)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase fetchMessages error:", error.message, error.details);
+        throw error;
+      }
 
       setMessages(data.map(msg => ({
         id: msg.id,
@@ -54,7 +57,7 @@ function App() {
         timestamp: msg.created_at
       })));
     } catch (err) {
-      console.error("Error fetching messages:", err);
+      console.error("Error in fetchMessages:", err);
     } finally {
       setIsHistoryLoading(false);
     }
@@ -85,25 +88,36 @@ function App() {
 
       // 1. Create conversation if it doesn't exist
       if (!convId) {
+        console.log("Creating new conversation...");
         const { data, error } = await supabase
           .from('conversations')
           .insert([{ title: userText.substring(0, 40) + (userText.length > 40 ? '...' : '') }])
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase create conversation error:", error.message, error.details);
+          throw error;
+        }
         convId = data.id;
         setCurrentConversationId(convId);
       }
 
       // 2. Save user message
-      await supabase.from('messages').insert([{
+      console.log("Saving user message...");
+      const { error: userMsgError } = await supabase.from('messages').insert([{
         role: 'user',
         content: userText,
         conversation_id: convId
       }]);
 
+      if (userMsgError) {
+        console.error("Supabase save user message error:", userMsgError.message, userMsgError.details);
+        throw userMsgError;
+      }
+
       // 3. Get AI response
+      console.log("Calling Gemini API...");
       const aiResponse = await getGeminiResponse(userText);
 
       const botMessage = {
@@ -116,18 +130,24 @@ function App() {
       setMessages(prev => [...prev, botMessage]);
 
       // 4. Save bot response
-      await supabase.from('messages').insert([{
+      console.log("Saving bot response...");
+      const { error: botMsgError } = await supabase.from('messages').insert([{
         role: 'bot',
         content: aiResponse,
         conversation_id: convId
       }]);
 
+      if (botMsgError) {
+        console.error("Supabase save bot response error:", botMsgError.message, botMsgError.details);
+        throw botMsgError;
+      }
+
     } catch (err) {
-      console.error("Error in handleSend:", err);
+      console.error("Detailed handleSend Error:", err);
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'bot',
-        content: "I'm sorry, I encountered an error. Please try again.",
+        content: `Sorry, I hit an error: ${err.message || "Unknown error"}`,
         timestamp: new Date()
       }]);
     } finally {
