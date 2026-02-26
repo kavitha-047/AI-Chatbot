@@ -1,30 +1,66 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Settings } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 import { supabase } from './lib/supabaseClient';
 import { getGeminiResponse } from './lib/gemini';
 import './App.css';
 
 function App() {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      role: 'bot',
-      content: 'Hello! I am your professional AI assistant. How can I help you today?',
-      timestamp: new Date()
-    }
-  ]);
-
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // 🔄 Fetch chat history on mount
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .order('created_at', { ascending: true })
+          .limit(50);
+
+        if (error) {
+          console.error("Error fetching history:", error);
+        } else if (data && data.length > 0) {
+          const formattedMessages = data.map(msg => ({
+            id: msg.id,
+            role: msg.role,
+            content: msg.content,
+            timestamp: msg.created_at
+          }));
+          setMessages(formattedMessages);
+        } else {
+          // Default welcome message if no history
+          setMessages([
+            {
+              id: 'welcome',
+              role: 'bot',
+              content: 'Hello! I am your professional AI assistant. How can I help you today?',
+              timestamp: new Date()
+            }
+          ]);
+        }
+      } catch (err) {
+        console.error("Fetch history exception:", err);
+      } finally {
+        setIsHistoryLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -123,27 +159,45 @@ function App() {
       </header>
 
       <main className="messages-area">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`message-wrapper ${msg.role}`}>
-            <div className="message-content-box">
-              <div className={`avatar-small ${msg.role}`}>
-                {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
-              </div>
-              <div className="message-bubble">
-                <p className="message-text">{msg.content}</p>
-                <span className="message-time">
-                  {new Date(msg.timestamp).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
+        {isHistoryLoading ? (
+          <div className="loading-history">Loading conversation history...</div>
+        ) : (
+          <AnimatePresence initial={false}>
+            {messages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                className={`message-wrapper ${msg.role}`}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="message-content-box">
+                  <div className={`avatar-small ${msg.role}`}>
+                    {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                  </div>
+                  <div className="message-bubble">
+                    <div className="message-text">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                    <span className="message-time">
+                      {new Date(msg.timestamp).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
 
         {isLoading && (
-          <div className="message-wrapper bot">
+          <motion.div
+            className="message-wrapper bot"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
             <div className="message-content-box">
               <div className="avatar-small bot">
                 <Bot size={16} />
@@ -156,7 +210,7 @@ function App() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         <div ref={messagesEndRef} />
