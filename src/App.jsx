@@ -3,8 +3,9 @@ import { Send, Bot, User, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { supabase } from './lib/supabaseClient';
-import { getGeminiResponse } from './lib/gemini';
+import { getGeminiStreamResponse } from './lib/gemini';
 import Sidebar from './components/Sidebar';
+import CodeBlock from './components/CodeBlock';
 import './App.css';
 
 function App() {
@@ -90,78 +91,58 @@ function App() {
       // 1. Create conversation if it doesn't exist
       if (!convId) {
         const chatTitle = userText.substring(0, 40) + (userText.length > 40 ? '...' : '');
-        console.log("Creating new conversation with title:", chatTitle);
-
         const { data, error } = await supabase
           .from('conversations')
           .insert([{ title: chatTitle }])
           .select()
           .single();
 
-        if (error) {
-          console.error("Supabase create conversation error:", {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code
-          });
-          throw new Error(`Failed to create conversation: ${error.message}`);
-        }
-
-        if (!data) {
-          throw new Error("Conversation created but no data returned.");
-        }
-
+        if (error) throw new Error(`Failed to create conversation: ${error.message}`);
         convId = data.id;
         setCurrentConversationId(convId);
-        console.log("Conversation created successfully, ID:", convId);
       }
 
       // 2. Save user message
-      console.log("Saving user message...");
-      const { error: userMsgError } = await supabase.from('messages').insert([{
+      await supabase.from('messages').insert([{
         role: 'user',
         content: userText,
         conversation_id: convId
       }]);
 
-      if (userMsgError) {
-        console.error("Supabase save user message error:", userMsgError.message, userMsgError.details);
-        throw userMsgError;
-      }
-
-      // 3. Get AI response
-      console.log("Calling Gemini API...");
-      const aiResponse = await getGeminiResponse(userText);
-
+      // 3. Get AI Streaming response
+      const botMessageId = Date.now() + 1;
       const botMessage = {
-        id: Date.now() + 1,
+        id: botMessageId,
         role: 'bot',
-        content: aiResponse,
+        content: '',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, botMessage]);
+      const stream = await getGeminiStreamResponse(userText);
+      let fullContent = '';
 
-      // 4. Save bot response
-      console.log("Saving bot response...");
-      const { error: botMsgError } = await supabase.from('messages').insert([{
+      for await (const chunk of stream) {
+        const chunkText = chunk.text();
+        fullContent += chunkText;
+        setMessages(prev => prev.map(msg =>
+          msg.id === botMessageId ? { ...msg, content: fullContent } : msg
+        ));
+      }
+
+      // 4. Save full bot response
+      await supabase.from('messages').insert([{
         role: 'bot',
-        content: aiResponse,
+        content: fullContent,
         conversation_id: convId
       }]);
 
-      if (botMsgError) {
-        console.error("Supabase save bot response error:", botMsgError.message, botMsgError.details);
-        throw botMsgError;
-      }
-
     } catch (err) {
-      console.error("Detailed handleSend Error:", err);
+      console.error("handleSend Error:", err);
       setMessages(prev => [...prev, {
-        id: Date.now() + 1,
+        id: Date.now() + 2,
         role: 'bot',
-        content: `Sorry, I hit an error: ${err.message || "Unknown error"}`,
+        content: `Err: ${err.message || "Something went wrong"}`,
         timestamp: new Date()
       }]);
     } finally {
@@ -269,7 +250,26 @@ function App() {
                     </div>
                     <div className="message-bubble">
                       <div className="message-text">
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        <ReactMarkdown
+                          components={{
+                            code({ node, inline, className, children, ...props }) {
+                              const match = /language-(\w+)/.exec(className || '');
+                              return !inline && match ? (
+                                <CodeBlock
+                                  language={match[1]}
+                                  value={String(children).replace(/\n$/, '')}
+                                  {...props}
+                                />
+                              ) : (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              );
+                            }
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
                       </div>
                       <span className="message-time">
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
