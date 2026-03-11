@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, MessageSquare, Trash2, LogOut } from 'lucide-react';
+import { Plus, MessageSquare, Trash2, LogOut, Bot } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 function Sidebar({ currentId, onSelect, onNewChat, isOpen, onClose }) {
@@ -58,18 +58,24 @@ function Sidebar({ currentId, onSelect, onNewChat, isOpen, onClose }) {
     return (
         <>
             {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
-            <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+            <aside className={`sidebar ${isOpen ? 'open' : ''} glass-effect`}>
                 <div className="sidebar-header">
                     <button className="new-chat-btn" onClick={onNewChat}>
-                        <Plus size={18} />
-                        New Chat
+                        <Plus size={20} />
+                        <span>New Chat</span>
                     </button>
                 </div>
 
                 <nav className="sidebar-nav">
-                    <h3 className="sidebar-section-title">Recent Chats</h3>
+                    <h3 className="sidebar-section-title">History</h3>
                     {loading ? (
-                        <p className="loading-history">Loading...</p>
+                        <div className="loading-history">
+                            <span className="typing-indicator">
+                                <span className="dot"></span>
+                                <span className="dot"></span>
+                                <span className="dot"></span>
+                            </span>
+                        </div>
                     ) : conversations.length > 0 ? (
                         conversations.map((conv) => (
                             <button
@@ -78,27 +84,67 @@ function Sidebar({ currentId, onSelect, onNewChat, isOpen, onClose }) {
                                 onClick={() => onSelect(conv.id)}
                             >
                                 <MessageSquare size={16} />
-                                <span className="truncate">{conv.title || "New Chat"}</span>
+                                <span className="truncate">{conv.title || "Untitled Chat"}</span>
                                 {currentId === conv.id && (
                                     <Trash2
                                         size={14}
-                                        className="ml-auto opacity-50 hover:opacity-100"
+                                        className="delete-icon"
                                         onClick={(e) => deleteConversation(e, conv.id)}
                                     />
                                 )}
                             </button>
                         ))
                     ) : (
-                        <p className="p-4 text-xs text-slate-500 italic">No previous chats</p>
+                        <div className="empty-history">
+                            <p>No recent chats</p>
+                        </div>
                     )}
                 </nav>
 
                 <div className="sidebar-footer">
-                    <p className="text-xs text-slate-500">AI Chatbot v1.0</p>
+                    <div className="version-info">
+                        <Bot size={14} />
+                        <span>Assistant v1.2</span>
+                    </div>
                 </div>
             </aside>
+
+            <style jsx>{`
+                .delete-icon {
+                    margin-left: auto;
+                    opacity: 0.4;
+                    transition: all 0.2s;
+                }
+                .delete-icon:hover {
+                    opacity: 1;
+                    color: #ef4444;
+                    transform: scale(1.1);
+                }
+                .empty-history {
+                    padding: 2rem 1rem;
+                    text-align: center;
+                    color: var(--text-muted);
+                    font-size: 0.75rem;
+                    font-style: italic;
+                }
+                .version-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    color: var(--text-muted);
+                    font-size: 0.7rem;
+                    font-weight: 500;
+                }
+                .truncate {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 160px;
+                }
+            `}</style>
         </>
     );
 }
+
 
 export default Sidebar;

@@ -196,6 +196,12 @@ function App() {
 
   return (
     <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      {/* Premium Background Glow Elements */}
+      <div className="bg-glow">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+      </div>
+
       <Sidebar
         currentId={currentConversationId}
         onSelect={handleSelectConversation}
@@ -218,7 +224,7 @@ function App() {
               <Bot size={24} />
             </div>
             <div className="header-titles">
-              <h1>AI ChatBot</h1>
+              <h1>AI Assistant</h1>
               <p className="status-online">
                 <span className="status-dot"></span> Online
               </p>
@@ -226,29 +232,42 @@ function App() {
           </div>
           <div className="header-actions">
             <button className="icon-button" title="Settings">
-              <Settings size={20} color="#64748b" />
+              <Settings size={20} color="var(--text-muted)" />
             </button>
           </div>
         </header>
 
         <main className="messages-area">
           {isHistoryLoading ? (
-            <div className="loading-history">Loading chat...</div>
+            <div className="loading-history">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="loading-shimmer"
+              >
+                Syncing with your assistant...
+              </motion.div>
+            </div>
           ) : (
-            <AnimatePresence initial={false}>
+            <AnimatePresence initial={false} mode="popLayout">
               {messages.map((msg) => (
                 <motion.div
                   key={msg.id}
                   className={`message-wrapper ${msg.role}`}
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  initial={{ opacity: 0, y: 20, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 20
+                  }}
                 >
                   <div className="message-content-box">
                     <div className={`avatar-small ${msg.role}`}>
                       {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
-                    <div className="message-bubble">
+                    <div className="message-bubble glass-effect">
                       <div className="message-text">
                         <ReactMarkdown
                           components={{
@@ -284,14 +303,14 @@ function App() {
           {isLoading && (
             <motion.div
               className="message-wrapper bot"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
             >
               <div className="message-content-box">
                 <div className="avatar-small bot">
                   <Bot size={16} />
                 </div>
-                <div className="message-bubble">
+                <div className="message-bubble glass-effect">
                   <div className="typing-indicator">
                     <span className="dot"></span>
                     <span className="dot"></span>
@@ -310,7 +329,7 @@ function App() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message here..."
+              placeholder="Message AI Assistant..."
               className="chat-input"
             />
             <button
@@ -322,7 +341,7 @@ function App() {
             </button>
           </form>
           <p className="footer-note">
-            AI Chatbot • Powered by React & Supabase
+            AI Assistant powered by Gemini 1.5 Flash • Secure & Private
           </p>
         </footer>
       </div>
